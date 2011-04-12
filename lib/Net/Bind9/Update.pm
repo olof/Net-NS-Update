@@ -34,15 +34,19 @@ use Carp;
 
 =head1 CONSTRUCTOR
 
-Origin
-ttl
-class
-keyfile
-timeout
-silent
-server
-port
-local
+ Net::Bind9::Update->new(
+         origin=>'.',
+         ttl=>3600,
+         keyfile=>'/dev/null',
+         timeout=>0,
+         debug=>1,
+         server=>'foobarbaz',
+         port=>53535, 
+         local=>0,
+ );
+
+The constructor more or less exposes some of the flags available
+for the nsupdate command. 
 
 =cut
 
@@ -145,15 +149,14 @@ sub add {
 
 Delete a domain, rrset or rr from the zone.
 
- $update->add(
+ $update->del(
 	name=>$label, 
 	type=>$rrtype, 
-	ttl=>3600, 
 	class=>'IN',
 	data=>$data,
  );
 
-ttl and class are optional.
+Everything, except the name, is optional.
 
 =cut
 
