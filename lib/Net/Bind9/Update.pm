@@ -28,12 +28,13 @@ start by adding some instructions to the module, and then run execute.
 =cut
 
 package Net::Bind9::Update;
+use feature qw/say/;
 use warnings;
 use strict;
 use Carp;
 use File::Temp qw/tempfile/;
 
-my $datadir = '/var/lib/ddnsup';
+my $datadir = '/var/lib/nsddns';
 
 =head1 CONSTRUCTOR
 
@@ -82,7 +83,7 @@ sub execute {
 	my $self = shift;
 	
 	# weed out deleted instructions (see the undo method)
-	my @instructions = grep {$_} @{$self->instructions};
+	my @instructions = grep {$_} @{$self->{instructions}};
 
 	my($fh, $tmpfile) = tempfile('nsupdate-XXXXXX', DIR=>$datadir) or do {
 		$self->{error} = "Could not open tempfile: $!";
@@ -97,12 +98,17 @@ sub execute {
 		$self->{server}, $self->{port} // '' 
 	) if $self->{server};
 	
+	push @instructions, 'send';
 	foreach(@instructions) {
 		say $fh $_;
 	}
 
 	# Ceci n'est pas une pipe
-	open my $pipe, _get_cmd($tmpfile); 
+	open(my $pipe, $self->_get_cmd($tmpfile) . '|') or do {
+		$self->{error} = "Couldn't open pipe: $!";
+		return undef;
+	}; 
+
 	while(<$pipe>) {
 		# Treat all output from nsupdate as fatal errors.
 		# bad? probably
@@ -111,7 +117,7 @@ sub execute {
 		return undef;
 	}
 	close $pipe;
-	unlink $tmpfile;
+	#unlink $tmpfile;
 	
 	# clear the list of instructions
 	$self->{instructions} = [];
@@ -150,7 +156,7 @@ sub add {
 		return;
 	}
 
-	$domain = fqdnize($domain);
+	$domain = $self->fqdnize($domain);
 	push @{$self->{instructions}}, sprintf("update add %s %d %s %s %s",
 		$domain, $ttl, $class, $type, $data
 	);
@@ -167,7 +173,8 @@ Delete a domain, rrset or rr from the zone.
 	data=>$data,
  );
 
-Everything, except the name, is optional.
+Everything, except the name, is optional. No defaults will be used, 
+unlike add.
 
 =cut
 
@@ -175,10 +182,10 @@ sub del {
 	my $self = shift;
 	my $args = { @_ };
 
-	my $domain = $args->{name};
+	my $domain = $self->fqdnize($args->{name});
 	my $type = $args->{type};
 	my $data = $args->{data};
-	my $class = $args->{class} // $self->{class};
+	my $class = $args->{class};
 
 	unless($domain) {
 		$self->{error} = "Domain was not supplied to delete";
@@ -186,10 +193,6 @@ sub del {
 	}
 
 	my $instruction = "update delete $domain ";
-
-	if(defined $class) {
-		$instruction .= "$class ";
-	}
 
 	if(defined $type) {
 		$instruction .= "$type ";
@@ -320,10 +323,12 @@ sub _get_cmd {
 
 	my $cmd = 'nsupdate ';
 
-	$cmd .= "-t $self->{timeout}" if $self->{timeout};
-	$cmd .= '-l '                 if $self->{local};
-	$cmd .= "-k $self->{keyfile}" if $self->{keyfile};
+	$cmd .= "-t $self->{timeout} " if $self->{timeout};
+	$cmd .= '-l '                  if $self->{local};
+	$cmd .= "-k $self->{keyfile} " if $self->{keyfile};
+	$cmd .= $tmpfile;
 
+	say $cmd;
 	return $cmd;
 }
 
