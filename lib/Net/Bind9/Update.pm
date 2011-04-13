@@ -31,6 +31,9 @@ package Net::Bind9::Update;
 use warnings;
 use strict;
 use Carp;
+use File::Temp qw/tempfile/;
+
+my $datadir = '/var/lib/ddnsup';
 
 =head1 CONSTRUCTOR
 
@@ -39,7 +42,6 @@ use Carp;
          ttl=>3600,
          keyfile=>'/dev/null',
          timeout=>0,
-         debug=>1,
          server=>'foobarbaz',
          port=>53535, 
          local=>0,
@@ -81,26 +83,35 @@ sub execute {
 	
 	# weed out deleted instructions (see the undo method)
 	my @instructions = grep {$_} @{$self->instructions};
-	my $statusfile = '/tmp/nsupdate' or die $!; # FIXME, better tempfile
 
-	open my $fh, '<', $statusfile;
+	my($fh, $tmpfile) = tempfile('nsupdate-XXXXXX', DIR=>$datadir) or do {
+		$self->{error} = "Could not open tempfile: $!";
+		return undef;
+	};
 
 	say $fh sprintf("server %s %s", 
-		$server->{server}, $server->{port} // '' 
+		$self->{server}, $self->{port} // '' 
 	) if $self->{server};
 	
 	say $fh sprintf("local %s %s", 
-		$server->{server}, $server->{port} // '' 
+		$self->{server}, $self->{port} // '' 
 	) if $self->{server};
 	
 	foreach(@instructions) {
-		say $pipe $_;				
+		say $fh $_;
 	}
 
 	# Ceci n'est pas une pipe
-	open my $pipe, _get_cmd($statusfile); 
-	# TODO: Read the status file. Parse messages. Report to user.
+	open my $pipe, _get_cmd($tmpfile); 
+	while(<$pipe>) {
+		# Treat all output from nsupdate as fatal errors.
+		# bad? probably
+		chomp;
+		$self->{error} = $_;
+		return undef;
+	}
 	close $pipe;
+	unlink $tmpfile;
 	
 	# clear the list of instructions
 	$self->{instructions} = [];
@@ -135,7 +146,7 @@ sub add {
 	my $class = $args->{class} // $self->{class};
 
 	unless($domain) {
-		$self->_carp "Domain was not supplied to add";
+		$self->{error} = "Domain was not supplied to add";
 		return;
 	}
 
@@ -170,7 +181,7 @@ sub del {
 	my $class = $args->{class} // $self->{class};
 
 	unless($domain) {
-		$self->_carp("Domain was not supplied to delete");
+		$self->{error} = "Domain was not supplied to delete";
 		return undef;
 	}
 
@@ -202,7 +213,7 @@ argument to the undo method.
 sub list {
 	my $self = shift;
 
-	return @{$self->{instructions};
+	return @{$self->{instructions}};
 }
 
 =head2 undo
@@ -236,7 +247,7 @@ Sets or gets the class used for new domains. 'IN' is the default.
 
 =cut
 
-sub origin {
+sub class {
 	my $self = shift;
 	return $self->{origin} unless @_;
 	$self->{origin} = shift;
@@ -260,11 +271,21 @@ sub origin {
 	my $origin = shift;
 
 	unless($origin =~ /\.$/) {
-		$self->_carp("Unqualified domain given to origin; . appended");
 		$origin .= '.';
 	}
 
 	$self->{origin} = shift;
+}
+
+=head2 error
+
+Return the latest error message as a readable string.
+
+=cut
+
+sub error {
+	my $self = shift; 
+	return $self->{error};
 }
 
 =head1 INTERNAL METHODS
@@ -285,7 +306,7 @@ sub fqdnize {
 	return $label if $label =~ /\.$/;
 
 	unless(defined $origin) {
-		$self->_carp("Non fully qualified domain $domain");
+		$self->{error} = "Non fully qualified domain $label";
 		return undef;
 	}
 
@@ -304,11 +325,6 @@ sub _get_cmd {
 	$cmd .= "-k $self->{keyfile}" if $self->{keyfile};
 
 	return $cmd;
-}
-
-sub _carp {
-	my $self = shift;
-	carp @_ unless $self->{silent};
 }
 
 1;
