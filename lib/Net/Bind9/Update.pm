@@ -34,8 +34,6 @@ use strict;
 use Carp;
 use File::Temp qw/tempfile/;
 
-my $datadir = '/var/lib/nsddns';
-
 =head1 CONSTRUCTOR
 
  Net::Bind9::Update->new(
@@ -62,6 +60,7 @@ sub new {
 		local=>0,
 		timeout=>300,
 		silent=>0,
+		datadir=>'.',
 
 		@_,
 
@@ -85,7 +84,9 @@ sub execute {
 	# weed out deleted instructions (see the undo method)
 	my @instructions = grep {$_} @{$self->{instructions}};
 
-	my($fh, $tmpfile) = tempfile('nsupdate-XXXXXX', DIR=>$datadir) or do {
+	my($fh, $tmpfile) = tempfile(
+		'nsupdate-XXXXXX', DIR=>$self->{datadir}
+	) or do {
 		$self->{error} = "Could not open tempfile: $!";
 		return undef;
 	};
