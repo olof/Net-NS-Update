@@ -118,7 +118,7 @@ sub execute {
 		return undef;
 	}
 	close $pipe;
-	#unlink $tmpfile;
+	unlink $tmpfile;
 	
 	# clear the list of instructions
 	$self->{instructions} = [];
