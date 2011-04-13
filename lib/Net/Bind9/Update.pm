@@ -44,10 +44,29 @@ use File::Temp qw/tempfile/;
          server=>'foobarbaz',
          port=>53535, 
          local=>0,
+         datadir=>'/tmp',
  );
+
+=head2 Options
 
 The constructor more or less exposes some of the flags available
 for the nsupdate command. 
+
+=head3 origin
+
+=head3 ttl
+
+=head3 keyfile
+
+=head3 timeout
+
+=head3 server
+
+=head3 port
+
+=head3 local
+
+=head3 datadir
 
 =cut
 
