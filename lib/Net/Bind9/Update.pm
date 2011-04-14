@@ -379,6 +379,17 @@ Git repository (VCS) is available through Github:
 
  L<http://github.com/olof/Net-Bind9-Update>
 
+=head1 SEE ALSO
+
+=over
+
+=item * nsupdate(1)
+
+=item * Bind Administrator's Reference Manual, chapter 4, section 
+        on dynamic updates
+
+=back
+
 =head1 COPYRIGHT
 
 Copyright (c) 2011, Olof Johansson <olof@cpan.org>. All rights reserved.
