@@ -47,15 +47,25 @@ our $VERSION = 0.1;
          port=>53535, 
          local=>0,
          datadir=>'/tmp',
+         backend=>'DNS',
  );
 
 =head2 Options
 
+=head3 keyfile (required)
+
+=head3 backend
+
+Which backend to use when communicating with the server. Can either
+be DNS or nsupdate. DNS will use Net::DNS to do UPDATE queries, 
+while nsupdate will wrap the nsupdate program (which of course,
+depends on its availability on the system). Only nsupdate is 
+implemented yet. By not specifying this, the module will first try
+the DNS module and then fall back to the nsupdate module.
+
 =head3 origin
 
 =head3 ttl
-
-=head3 keyfile
 
 =head3 timeout
 
