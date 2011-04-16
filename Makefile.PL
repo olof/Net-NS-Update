@@ -3,18 +3,20 @@ use warnings;
 use ExtUtils::MakeMaker;
 
 WriteMakefile(
-	NAME => 'Net::Bind9::Update',
+	NAME => 'Net::Bind9::Update::nsupdate',
 	AUTHOR => 'Olof Johansson <olof@cpan.org>',
-	VERSION_FROM => 'lib/Net/Bind9/Update.pm',
-	ABSTRACT_FROM => 'lib/Net/Bind9/Update.pm',
+	VERSION_FROM => 'lib/Net/Bind9/Update/nsupdate.pm',
+	ABSTRACT_FROM => 'lib/Net/Bind9/Update/nsupdate.pm',
 	LICENSE => 'perl',
 
 	MAN3PODS => {
-		'lib/Net/Bind9/Update.pm' => 'blib/man3/Net::Bind9::Update.3pm'
+		'lib/Net/Bind9/Update/nsupdate.pm' => 
+			'blib/man3/Net::Bind9::Update::nsupdate.3pm'
 	},
 
 	PM => {
-		'lib/Net/Bind9/Update.pm' => '$(INST_LIBDIR)/Update.pm'
+		'lib/Net/Bind9/Update/nsupdate.pm' => 
+			'$(INST_LIBDIR)/nsupdate.pm'
 	},
 
 	PREREQ_PM => {
