@@ -1,0 +1,16 @@
+Changes
+lib/Net/Bind9/Update.pm
+Makefile
+Makefile.PL
+MANIFEST			This list of files
+MANIFEST.SKIP
+README
+t/00-load.t
+t/boilerplate.t
+t/data/db.example.com
+t/data/db.example.net
+t/data/db.example.org
+t/manifest.t
+t/pod-coverage.t
+t/pod.t
+t/test.ini

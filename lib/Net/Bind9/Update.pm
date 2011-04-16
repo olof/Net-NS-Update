@@ -9,7 +9,7 @@
 
 =head1 NAME
 
-Net::Bind9::Update, Perl module wrapper for nsupdate
+Net::Bind9::Update - Perl module wrapper for nsupdate
 
 =head1 SYNOPSIS
 
@@ -33,6 +33,7 @@ use warnings;
 use strict;
 use Carp;
 use File::Temp qw/tempfile/;
+our $VERSION = 0.1;
 
 =head1 CONSTRUCTOR
 
