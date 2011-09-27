@@ -1,6 +1,7 @@
+bin/ddnsupdate.pl
 Changes
-lib/Net/Bind9/Update.pm
-lib/Net/Bind9/Update/nsupdate.pm
+lib/Net/NS/Update.pm
+lib/Net/NS/Update/nsupdate.pm
 Makefile
 Makefile.PL
 MANIFEST			This list of files
