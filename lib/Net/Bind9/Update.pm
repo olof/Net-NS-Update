@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# Net::Bind9::Update, Perl module to do dynamic updates for DNS zones
+# Net::NS::Update, Perl module to do dynamic updates for DNS zones
 # 
 # Copyright (c) 2011, Olof Johansson <olof@cpan.org> 
 # All rights reserved.
@@ -9,11 +9,11 @@
 
 =head1 NAME
 
-Net::Bind9::Update - Perl module to do dynamic updates for DNS zones
+Net::NS::Update - Perl module to do dynamic updates for DNS zones
 
 =head1 SYNOPSIS
 
- my $update = Net::Bind9::Update->new(
+ my $update = Net::NS::Update->new(
          origin => 'example.com.',
 	 ttl => 3600,
 	 keyfile => '/etc/bind/session.key',
@@ -28,7 +28,7 @@ instructions to the module, and then run execute.
 
 =cut
 
-package Net::Bind9::Update;
+package Net::NS::Update;
 use feature qw/say/;
 use warnings;
 use strict;
@@ -38,7 +38,7 @@ our $VERSION = 0.1;
 
 =head1 CONSTRUCTOR
 
- Net::Bind9::Update->new(
+ Net::NS::Update->new(
          origin=>'.',
          ttl=>3600,
          keyfile=>'/dev/null',
@@ -96,19 +96,19 @@ sub new {
 		instructions => [],
 	};
 
-	if($class eq 'Net::Bind9::Update') {
+	if($class eq 'Net::NS::Update') {
 		if(not defined $self->{backend}) {
 			my %errs;
 			if(eval {
-				require Net::Bind9::Update::DNS;
+				require Net::NS::Update::DNS;
 			}) {
 				$errs{dns} = $@;
-				$class = 'Net::Bind9::Update::DNS';
+				$class = 'Net::NS::Update::DNS';
 			} elsif(eval {
-				require Net::Bind9::Update::nsupdate;
+				require Net::NS::Update::nsupdate;
 			}) {
 				$errs{nsupdate} = $@;
-				$class = 'Net::Bind9::Update::nsupdate';
+				$class = 'Net::NS::Update::nsupdate';
 			} else {
 				croak(<< "EOF" );
 Could not load either of the backends:
@@ -120,7 +120,7 @@ EOF
 		} elsif($self->{backend} eq 'DNS') {
 		} elsif($self->{backend} eq 'nsupdate') {
 			eval {
-				require "Net::Bind9::Update::$self->{backend}"
+				require "Net::NS::Update::$self->{backend}"
 			} or croak("Could not load backend: $@"); 
 		} else {
 			croak("Unknown backend: $self->{backend}");
@@ -398,28 +398,11 @@ sub _get_cmd {
 
 =head1 
 
-=head1 TESTING
-
-Parts of the test suite require a very specific environment setup. 
-First: you will have to have a Bind9 running locally (or remotely, but 
-that requires chaning in the F</t/test.ini> file). You will have to 
-have a key for it, shared by Bind9 and your module. Last, but not 
-least, you will have to make some dynamic zones: "example.com", 
-"example.net" and "example.org". The zone files for these are 
-available in F</t/data/db.example.{com,net,org}>. When all this is 
-done:
-
- make test-bind9
-
 =head1 AVAILABILITY
-
-Latest stable version is availabe at CPAN:
-
- L<http://search.cpan.org/perldoc?Net::Bind9::Update::nsupdate>
 
 Git repository (VCS) is available through Github:
 
- L<http://github.com/olof/Net-Bind9-Update>
+ L<http://github.com/olof/Net-NS-Update>
 
 =head1 SEE ALSO
 
